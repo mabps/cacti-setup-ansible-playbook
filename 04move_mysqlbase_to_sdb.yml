@@ -1,0 +1,45 @@
+ - name: Plug in second HDD and move to at the MysqlDatabase
+   hosts: localhost
+   connection: local
+   become: True
+   vars:
+     second_drive_name: sdb
+     second_drive_partition: sdb1
+     filesystem_type: ext4
+     mount_point_name: '/data'
+     new_path_for_database: '/{{mount_point_name}}/mysqldatabase'
+   
+   
+   tasks:
+
+     - name: Create partition on Second drive
+       parted:
+         device: /dev/sdb
+         part_type: primary
+         number: 1
+         state: present
+         unit: GB
+
+     - name: Create ext.4 File system on /dev/sdb1
+       filesystem:
+         fstype: ext4
+         dev: /dev/sdb1
+
+     - name: Create Mount points for sdb1
+       file:
+         path: /data
+         state: directory
+
+     - name: Automount new disk
+       mount:
+         path: /data
+         src: /dev/sdb1
+         fstype: ext4
+         state: present
+
+
+     - name: Create Dirs for Mysql Database
+     - name: Copy the All Databasess from /var/lib/mysql to new destination = '{{ new_path_for_database }}'
+     - name: Correct settings of 'apparbor' for resolve using new Destination
+     -    
+      

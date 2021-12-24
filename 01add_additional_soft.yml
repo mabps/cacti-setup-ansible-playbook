@@ -1,0 +1,46 @@
+- name: Add aditional soft in system for more comfort
+  hosts: localhost
+  connection: local
+  become: true
+  
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    softname:
+      - mc
+      - net-tools
+      - wget
+
+  tasks:
+    - name: Add Some additional soft
+      apt:
+        cache_valid_time: 28800 #8 hours
+        update_cache: yes
+        pkg: '{{ softname }}'
+        state: present
+      become: true
+
+
+# Make some config for additional soft
+# Config Midnight Commander
+    - name: Find ini fails for config mc on all users
+      find:
+        paths: /home
+        patterns: 'ini'
+        recurse: yes
+        file_type: file
+      register: found_files
+    - name: Modify config file Midnight Commander - all users
+      lineinfile:
+        path: '{{ item.path }}'
+        backup: yes
+        regexp: '^skin=default'
+        line: skin=darkfar.ini
+      with_items: '{{ found_files.files }}'
+    - name: Modify config file Midnight Commander - root
+      lineinfile:
+        path: '/root/.config/mc/ini'
+        backup: yes
+        regexp: 'skin=default'
+        line: skin=darkfar.ini
+
+

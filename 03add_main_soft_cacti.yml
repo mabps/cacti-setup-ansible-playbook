@@ -1,0 +1,94 @@
+- name: Add Main Soft for setup Cacti
+  hosts: localhost
+  connection: local
+  become: true
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    softname:
+     - git
+     - mariadb-server
+     - apache2
+     - php
+     - php-gd
+     - php-xml
+     - php-mysql
+     - php-snmp
+     - rrdtool
+     - php-ldap
+     - php-mbstring
+     - python3-mysqldb
+    cactiusername: cactiuser
+    cactiuserpassword: cactipassword
+    cactipath: /var/www/html/cacti
+
+
+
+  tasks:
+    - name: Add all main soft
+      apt:
+        cache_valid_time: 28800 #8 hours
+        update_cache: yes
+        pkg: '{{ softname }}'
+        state: present
+      become: true
+
+# Copy Cacti source to /var/www/cacti - for representation on server 
+    - name: Put the Cacti source from 'github.com' to our server
+      git:
+        repo: 'https://github.com/cacti/cacti.git'
+        dest: '{{ cactipath }}'
+
+    - name: Grant privelege for Apache to Cacti DIR
+      shell: "chown -R www-data:www-data '{{ cactipath }}'"
+
+    - name: Copy default config file Cacti to runing config
+      shell: "cp '{{ cactipath }}'/include/config.php.dist '{{ cactipath }}'/include/config.php"
+
+# Edit the cacticonfig file
+# symblo \x27 = '  its way to set symbol '
+    - name: Modify the Cacti config file - username
+      lineinfile:
+        path: '{{ cactipath }}/include/config.php'
+        regexp: '^\$database_username = \x27cactiuser\x27;'
+        line: "$database_username = '{{ cactiusername }}';"
+        state: present
+    - name: Modify the Cacti config file - userpassword
+      lineinfile:
+        path: '{{ cactipath }}/include/config.php'
+        regexp: '^\$database_password = \x27cactipassword\x27;'
+        line: "$database_password = '{{ cactiuserpassword }}';"
+        state: present
+
+# Create Cacti Database & struture & permisions
+    - name: Create Cacti Database
+      mysql_db:
+        name: cacti
+        state: present
+    - name: Import database Cacti structure
+      mysql_db:
+        state: import
+        name: cacti
+        target: '{{ cactipath }}/cacti.sql'
+    - name: Remove anonymous user account
+      mysql_user:
+        name: ''
+        host: localhost
+        state: absent
+    - name: Make the new Cacti user - '{{ cactiusername }}'
+      mysql_user:
+        name: '{{ cactiusername }}'
+        password: '{{ cactiuserpassword }}'
+        state: present
+    - name: Grant access tosystem table TimeZone to - '{{ cactiusername }}'
+      mysql_user:
+        name: '{{ cactiusername }}'
+        priv: 'mysql.time_zone_name:ALL,GRANT'
+        state: present
+    - name: Grant privelege to Cacti database for - '{{ cactiusername }}' 
+      mysql_user:
+        name: '{{ cactiusername }}'
+        priv: 'cacti.*:ALL,GRANT'
+        state: present
+
+

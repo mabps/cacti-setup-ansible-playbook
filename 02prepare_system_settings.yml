@@ -1,0 +1,34 @@
+ - name: Configure Local System settings
+   hosts: localhost
+   connection: local
+   become: True
+   tasks:
+     - name: Setup timezone Russian Moscow
+       timezone:
+         name: Europe/Moscow
+
+     - name: Create partition on Second drive
+       parted:
+         device: /dev/sdb
+         part_type: primary
+         number: 1
+         state: present
+         unit: GB
+
+     - name: Create ext.4 File system on /dev/sdb1
+       filesystem:
+         fstype: ext4
+         dev: /dev/sdb1
+
+     - name: Create Mount points for sdb1
+       file:
+         path: /data
+         state: directory
+
+     - name: Automount new disk
+       mount:
+         path: /data
+         src: /dev/sdb1
+         fstype: ext4
+         state: present
+
