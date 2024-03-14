@@ -7,12 +7,12 @@ Some Ansible Playbooks for automate setup procedure Cacti monitoring server
 
 Add new config file in /etc/mysql/mysql.d/example.cnf  
 contenet file:  
-`[mysqld]
-default-time-zone = "+03:00"
-
-collation_server = utf8mb4_unicode_ci
-max_heap_table_size = 128M
-tmp_table_size = 128M
-innodb_buffer_pool_size = 1500M
-innodb_doublewrite = OFF`
+`[mysqld]  
+default-time-zone = "+03:00"  
+  
+collation_server = utf8mb4_unicode_ci  
+max_heap_table_size = 128M  
+tmp_table_size = 128M  
+innodb_buffer_pool_size = 1500M  
+innodb_doublewrite = OFF`  
 
