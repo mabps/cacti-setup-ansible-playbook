@@ -30,7 +30,7 @@ values (%syslogfacility%, %syslogpriority%, '%programname%', '%timegenerated:::d
 
 ruleset (name="network-udp")
 {
-  *.* action(type="ommysql" server="localhost" serverport="3306" db="cacti" uid="cacti" pwd="cactipassword" action.errorfile="/var/log/syslog-error" template="cacti_syslog")
+  *.* action(type="ommysql" server="localhost" serverport="3306" db="cacti" uid="usercacti" pwd="cactipassword" action.errorfile="/var/log/syslog-error" template="cacti_syslog")
 }
 ```
 
